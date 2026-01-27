@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 
 export function ContactForm() {
+  // Form state management
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,9 +13,10 @@ export function ContactForm() {
     budgetRange: "",
     message: "",
   })
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [shareMethod, setShareMethod] = useState<"email" | "whatsapp" | null>(null)
+
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [contactMethod, setContactMethod] = useState<"email" | "whatsapp" | null>(null)  // User chooses how to send
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -23,9 +25,10 @@ export function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setIsLoading(true)
 
     try {
+      // Send to our API endpoint first
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,28 +42,32 @@ export function ContactForm() {
       })
 
       if (response.ok) {
-        const data = await response.json()
-
-        if (shareMethod === "email") {
+        // API call succeeded, now redirect based on user's choice
+        if (contactMethod === "email") {
+          // Open email client with pre-filled data
           window.location.href = `mailto:codecyclon@gmail.com?subject=New Project Inquiry from ${formData.name}&body=${encodeURIComponent(
             `Name: ${formData.name}\nEmail: ${formData.email}\nBusiness: ${formData.businessIdea}\nBudget: ${formData.budgetRange}\nMessage: ${formData.message}`,
           )}`
-        } else if (shareMethod === "whatsapp") {
-          const whatsappText = `Hi! I'm ${formData.name}. I'm interested in building a website for my ${formData.businessIdea}. My budget is around ${formData.budgetRange}. ${formData.message}`
-          window.location.href = `https://wa.me/919520535135?text=${encodeURIComponent(whatsappText)}`
+        } else if (contactMethod === "whatsapp") {
+          // Open WhatsApp with message template
+          const whatsappMessage = `Hi! I'm ${formData.name}. I want to discuss a website project for my ${formData.businessIdea}. Budget range: ${formData.budgetRange}. ${formData.message}`
+          window.location.href = `https://wa.me/919520535135?text=${encodeURIComponent(whatsappMessage)}`
         }
 
-        setSubmitted(true)
+        setIsSubmitted(true)
+
+        // Reset form after 3 seconds
         setTimeout(() => {
           setFormData({ name: "", email: "", businessIdea: "", budgetRange: "", message: "" })
-          setSubmitted(false)
-          setShareMethod(null)
+          setIsSubmitted(false)
+          setContactMethod(null)
         }, 3000)
       }
     } catch (error) {
+      // TODO: Add proper error handling UI
       console.error("Form submission error:", error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -121,7 +128,7 @@ export function ContactForm() {
 
           {/* Contact Form */}
           <div className="bg-card border border-border rounded-xl p-8 animate-slide-in-right">
-            {submitted ? (
+            {isSubmitted ? (
               <div className="flex flex-col items-center justify-center min-h-96 text-center space-y-4 animate-slide-in-up">
                 <div className="p-4 bg-accent/10 rounded-full text-4xl">✅</div>
                 <h3 className="text-2xl font-bold text-foreground">Thank You!</h3>
@@ -137,7 +144,7 @@ export function ContactForm() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all disabled:opacity-50"
                     placeholder="John Doe"
                   />
@@ -151,7 +158,7 @@ export function ContactForm() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all disabled:opacity-50"
                     placeholder="john@example.com"
                   />
@@ -165,7 +172,7 @@ export function ContactForm() {
                     value={formData.businessIdea}
                     onChange={handleChange}
                     required
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all disabled:opacity-50"
                     placeholder="Describe your business"
                   />
@@ -178,7 +185,7 @@ export function ContactForm() {
                     value={formData.budgetRange}
                     onChange={handleChange}
                     required
-                    disabled={loading}
+                    disabled={isLoading}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all disabled:opacity-50"
                   >
                     <option value="">Select a range</option>
@@ -196,7 +203,7 @@ export function ContactForm() {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    disabled={loading}
+                    disabled={isLoading}
                     rows={4}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none disabled:opacity-50"
                     placeholder="Tell us more about your project..."
@@ -204,12 +211,12 @@ export function ContactForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground">Send Details Via:</label>
+                  <label className="block text-sm font-medium text-foreground">How should we contact you?</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => setShareMethod(shareMethod === "email" ? null : "email")}
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${shareMethod === "email"
+                      onClick={() => setContactMethod(contactMethod === "email" ? null : "email")}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${contactMethod === "email"
                         ? "bg-accent text-accent-foreground border-accent"
                         : "bg-background border-border hover:border-accent/50"
                         }`}
@@ -218,8 +225,8 @@ export function ContactForm() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShareMethod(shareMethod === "whatsapp" ? null : "whatsapp")}
-                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${shareMethod === "whatsapp"
+                      onClick={() => setContactMethod(contactMethod === "whatsapp" ? null : "whatsapp")}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${contactMethod === "whatsapp"
                         ? "bg-accent text-accent-foreground border-accent"
                         : "bg-background border-border hover:border-accent/50"
                         }`}
@@ -231,14 +238,14 @@ export function ContactForm() {
 
                 <button
                   type="submit"
-                  disabled={loading || !shareMethod}
+                  disabled={isLoading || !contactMethod}
                   className="btn-primary w-full flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? <>⏳ Sending...</> : <>Send Message →</>}
+                  {isLoading ? <>⏳ Sending...</> : <>Send Message →</>}
                 </button>
 
                 <p className="text-xs text-foreground/50 text-center">
-                  We respect your privacy. Your information is safe with us.
+                  Your info stays private. We'll respond within 24 hours.
                 </p>
               </form>
             )}
