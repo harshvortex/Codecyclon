@@ -68,7 +68,7 @@ You can deploy this to Railway, Render, or any container service.
    - **Branch**: `main`
    - **Root Directory**: `.` (leave blank)
    - **Runtime**: `Node`
-   - **Build Command**: `npm install && npm run build`
+   - **Build Command**: `npm install --legacy-peer-deps && npm run build`
    - **Start Command**: `npm start`
 5. **Select Plan**: "Free" (or as needed).
 6. **Click "Create Web Service"**.
@@ -92,3 +92,13 @@ You can deploy this to Railway, Render, or any container service.
 Email: codecyclon@gmail.com  
 WhatsApp: +91 9520535135
 
+
+## Troubleshooting
+
+### Build Failed: "ERESOLVE could not resolve"
+This is a common issue with Next.js 15 and some React libraries.
+**Fix:** Update your build command to:
+`npm install --legacy-peer-deps && npm run build`
+
+### Next.js not found
+Ensure the `NODE_VERSION` environment variable is set to at least `20.14.2` (or `20`) in Render settings.
