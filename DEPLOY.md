@@ -47,6 +47,29 @@ docker run -p 3000:3000 codecyclon
 
 You can deploy this to Railway, Render, or any container service.
 
+## Deploying to Render (Web Service)
+
+1. **Push your code to GitHub** (if you haven't already).
+2. **Log in to [Render](https://render.com)** and click "New +" -> "Web Service".
+3. **Connect your GitHub account** and select the `Codecyclon` repository.
+4. **Configure the service**:
+   - **Name**: `codecyclon` (or your preferred name)
+   - **Region**: Choose the one closest to your users.
+   - **Branch**: `main`
+   - **Root Directory**: `.` (leave blank)
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+5. **Select Plan**: "Free" (or as needed).
+6. **Click "Create Web Service"**.
+
+Render will now build and deploy your app. It might take a few minutes.
+
+### Important for Render:
+- Go to the **Settings** tab of your new service.
+- Scroll down to **Environment Variables**.
+- Add `NODE_VERSION` with value `20.14.2` (or simply `20`) to match your local setup.
+
 ## Post-Deployment Checklist
 
 - [ ] Verify HTTPS is working
